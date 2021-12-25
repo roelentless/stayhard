@@ -1,6 +1,6 @@
 # Stay Hard
 
-Browser extension to stay away from addictive time-wasting non-productive sites
+Browser extension to intercept muscle memory and stay away from addictive, time-wasting & non-productive sites.
 
 ## Personalities
 
