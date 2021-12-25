@@ -1,0 +1,26 @@
+{
+  "onView": [
+    {
+      "reminder": "STAY HARD",
+      "drill": "close this page<br><br>do something that matters instead",
+      "img": "assets/soultaker.jpeg"
+    }
+  ],
+  "onGetSoft": [
+    {
+      "drill": "You have {{ctx.holdSecondsRemaining}} sec to decide to stay fucking hard!<br><br>Close this shit!"
+    },
+    {
+      "drill": "You have {{ctx.holdSecondsRemaining}} sec to decide to stay fucking hard!<br><br>What the fuck are you gonna do here?"
+    },
+    {
+      "drill": "You have {{ctx.holdSecondsRemaining}} sec to decide to stay fucking hard!<br><br>One life one shot, focus and do something useful!"
+    },
+    {
+      "drill": "You have {{ctx.holdSecondsRemaining}} sec to decide to stay fucking hard!<br><br>Eyes on the prize motherfucker!"
+    },
+    {
+      "drill": "You have {{ctx.holdSecondsRemaining}} sec to decide to stay fucking hard!<br><br>Keep punching!"
+    }
+  ]
+}

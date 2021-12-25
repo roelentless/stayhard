@@ -1,0 +1,43 @@
+{
+  "manifest_version": 3,
+  
+  "name": "Stay Hard",
+  "description": "Reverse psychology to stay away from addictive, time-wasting & non-productive sites",
+  "version": "0.1.0",
+
+  "action": {
+    "default_popup": "popup.html"
+  },
+
+  "permissions": [
+    "activeTab",
+    "webNavigation",
+    "scripting",
+    "tabs",
+    "storage"
+  ],
+
+  "host_permissions": [
+    "http://*/",
+    "https://*/"
+  ],
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "icons": {
+    "16": "lib/lg_16x16.png",
+    "48": "lib/lg_48x48.png",
+    "128": "lib/lg_128x128.png"
+  },
+
+  "web_accessible_resources": [
+    {
+      "resources": ["assets/*"],
+      "matches": ["*://*/*"]
+    }
+  ],
+
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuAO8IoP37hTbFJU+hv5eofDFjq/5QzAQkc2Jv4Ysl4XamYEJYp8NU/oZEpzmXU7AoaPID54Aq3OQVuSS+Qax30VTk1PBYa42uPwKeDfUzADoPBYOf8cAZgGYaBXnpvw6StpZNWaLYEBr+mvTSg4nPSLdPLKOo5E4FgLmuR//i9C5M7XFClhCcQSlxiKSXw5IxXlHyKhMWqP5Ag/hWGhxJj1Ityq06jxZ1Q5s5qXeeSVC/JdZLQZKrAx7zBH7EDl+dmRo4C9rLjksR91mSHWRczhXRIfvKmr0h8keByesYHPvffh/NodPlLU60TeSXKQS1pjg2Vqkz6jNzBh5RPd3xQIDAQAB"
+}
