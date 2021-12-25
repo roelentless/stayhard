@@ -79,11 +79,6 @@ chrome.runtime.onMessage.addListener(function(payload, sender, sendResponse) {
   // return true
 });
 
-// Open options when clicking on the icon
-chrome.action.onClicked.addListener(function() {
-  chrome.tabs.create({ url: 'options.html' });
-});
-
 // Initialize application
 async function main() {
   await refreshConfig();
