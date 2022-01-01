@@ -2,8 +2,8 @@
   "manifest_version": 3,
   
   "name": "Stay Hard",
-  "description": "Reverse psychology to intercept muscle memory and stay away from addictive, time-wasting & non-productive sites.",
-  "version": "0.1.1",
+  "description": "Intercept muscle memory and stay away from addictive, time-wasting & non-productive sites.",
+  "version": "0.1.2",
 
   "action": {
     "default_popup": "popup.html"
