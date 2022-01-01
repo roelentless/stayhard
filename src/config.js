@@ -22,11 +22,9 @@ export function enrichConfig(config) {
       ...defaultConfig.activation,
       ...(config.activation || {}),
     },
-    sites: uniq([
-      ...defaultConfig.sites,
-      ...(config.sites||[]),
-    ]),
   };
+
+  merged.sites = (config && config.sites ? config.sites : defaultConfig.sites);
 
   return {
     config: merged,

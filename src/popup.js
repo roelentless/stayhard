@@ -1,4 +1,5 @@
 import { defaultConfig } from "./config";
+import duration from 'humanize-time';
 
 async function reloadConfig() {
   const { config } = await chrome.storage.sync.get('config');
@@ -35,12 +36,9 @@ async function loadConfigArea() {
   document.getElementById('defaultConfig').value = JSON.stringify(defaultConfig, null, 2);
 
   document.getElementById('incognito').onclick = function() {
-    chrome.extension.isAllowedIncognitoAccess(function(isAllowedAccess) {
-        if (isAllowedAccess) return; // Great, we've got access
-        alert('Please allow private/incognito mode in the following screen.');
-        chrome.tabs.create({
-            url: 'chrome://extensions/?id=' + chrome.runtime.id
-        });
+    alert('Please allow private/incognito mode in the following screen.');
+    chrome.tabs.create({
+        url: 'chrome://extensions/?id=' + chrome.runtime.id
     });
   }
 
@@ -51,8 +49,21 @@ async function loadConfigArea() {
   });
 }
 
+async function loadStats() {
+  const { sessions } = await chrome.storage.local.get({ sessions: [] });
+  let totalTime = 0;
+  for(let session of sessions) {
+    totalTime += session.end - session.start;
+  }
+  document.getElementById('timeWasted').textContent = duration(totalTime*1000);
+}
+
 async function main() {
   await reloadConfig();
   await loadConfigArea();
+  await loadStats();
 }
-main();
+main().catch(err => {
+  console.trace(err);
+  throw err;
+});

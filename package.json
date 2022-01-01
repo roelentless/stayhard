@@ -1,6 +1,6 @@
 {
   "name": "stayhard",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "main": "none",
   "repository": "git@github.com:ruleb/stayhard.git",
   "author": "Roel Berger <berger.roel@gmail.com>",
@@ -10,8 +10,10 @@
     "dev": "esbuild src/content.js src/background.js src/popup.js --bundle --outdir=ext --watch"
   },
   "devDependencies": {
+    "browser-extension-url-match": "^0.3.3",
     "esbuild": "^0.14.5",
     "hotkeys-js": "^3.8.7",
+    "humanize-time": "^0.0.3",
     "json-stable-stringify": "^1.0.1",
     "lodash": "^4.17.21",
     "mustache": "^4.2.0",
