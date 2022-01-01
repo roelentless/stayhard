@@ -2,6 +2,13 @@
 # yarn lockfile v1
 
 
+browser-extension-url-match@^0.3.3:
+  version "0.3.3"
+  resolved "https://registry.yarnpkg.com/browser-extension-url-match/-/browser-extension-url-match-0.3.3.tgz#46156b9ac35c57af40d3dc7acab4db12086db575"
+  integrity sha512-x7uphFW6fxHF8/RfNqUQomZL4KsKgNb3f8ZrLsYsxSVTaOyeg9I3w/8iuQ2I51vVmrtiYiv37Tfq5gQyMN3j2Q==
+  dependencies:
+    fancy-regex "^0.4.3"
+
 esbuild-android-arm64@0.14.5:
   version "0.14.5"
   resolved "https://registry.yarnpkg.com/esbuild-android-arm64/-/esbuild-android-arm64-0.14.5.tgz#a7bc2263e099b67d1d6bc10ad504f396b439a42a"
@@ -110,10 +117,20 @@ esbuild@^0.14.5:
     esbuild-windows-64 "0.14.5"
     esbuild-windows-arm64 "0.14.5"
 
+fancy-regex@^0.4.3:
+  version "0.4.3"
+  resolved "https://registry.yarnpkg.com/fancy-regex/-/fancy-regex-0.4.3.tgz#f75475fcf1c4ca00cf053ba0485e4e0694b32391"
+  integrity sha512-c9R6Q7cM8pX5i0ZF3sAjYWPFsjGOUthPWPnkuZgDP8i6bzRtTnSXX5PJeWc34w/C0tbGj/bO3GSmdnEEj4K5PQ==
+
 hotkeys-js@^3.8.7:
   version "3.8.7"
   resolved "https://registry.yarnpkg.com/hotkeys-js/-/hotkeys-js-3.8.7.tgz#c16cab978b53d7242f860ca3932e976b92399981"
   integrity sha512-ckAx3EkUr5XjDwjEHDorHxRO2Kb7z6Z2Sxul4MbBkN8Nho7XDslQsgMJT+CiJ5Z4TgRxxvKHEpuLE3imzqy4Lg==
+
+humanize-time@^0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/humanize-time/-/humanize-time-0.0.3.tgz#4fd5378d829fa08221c50c1f7865c7644e45197a"
+  integrity sha512-8flw6Qks4XTNafke0HzKfBlG5TDXM1QEd6XUzqEJdsBEqQ+oIjAJqJLUkf76sE98I6wQecsj+Nmh6Pj/8H2SnA==
 
 json-stable-stringify@^1.0.1:
   version "1.0.1"

@@ -50,6 +50,7 @@ async function main() {
 
   const img = document.createElement('img');
   img.ondragstart = function() { return false };
+  img.style.margin = '0 auto';
   img.style.width = '500px';
   img.style.height = '333.33px';
   img.style.borderRadius = '50%';
