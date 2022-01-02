@@ -6,8 +6,8 @@
   "author": "Roel Berger <berger.roel@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "build": "esbuild src/content.js src/background.js src/popup.js --bundle --outdir=ext",
-    "dev": "esbuild src/content.js src/background.js src/popup.js --bundle --outdir=ext --watch"
+    "build": "esbuild src/content.jsx src/background.js src/popup.jsx --bundle --outdir=ext --jsx-factory=h --jsx-fragment=Fragment",
+    "dev": "esbuild src/content.jsx src/background.js src/popup.jsx --bundle --outdir=ext --watch --jsx-factory=h --jsx-fragment=Fragment"
   },
   "devDependencies": {
     "browser-extension-url-match": "^0.3.3",
@@ -17,6 +17,7 @@
     "json-stable-stringify": "^1.0.1",
     "lodash": "^4.17.21",
     "mustache": "^4.2.0",
+    "preact": "^10.6.4",
     "spectre.css": "^0.5.9"
   }
 }
