@@ -154,6 +154,11 @@ mustache@^4.2.0:
   resolved "https://registry.yarnpkg.com/mustache/-/mustache-4.2.0.tgz#e5892324d60a12ec9c2a73359edca52972bf6f64"
   integrity sha512-71ippSywq5Yb7/tVYyGbkBggbU8H3u5Rz56fH60jGFgr8uHwxs+aSKeqmluIVzM0m0kB7xQjKS6qPfd0b2ZoqQ==
 
+preact@^10.6.4:
+  version "10.6.4"
+  resolved "https://registry.yarnpkg.com/preact/-/preact-10.6.4.tgz#ad12c409ff1b4316158486e0a7b8d43636f7ced8"
+  integrity sha512-WyosM7pxGcndU8hY0OQlLd54tOU+qmG45QXj2dAYrL11HoyU/EzOSTlpJsirbBr1QW7lICxSsVJJmcmUglovHQ==
+
 spectre.css@^0.5.9:
   version "0.5.9"
   resolved "https://registry.yarnpkg.com/spectre.css/-/spectre.css-0.5.9.tgz#86c732d093036d9fdc0a2ba570f005e4023ae6ca"
