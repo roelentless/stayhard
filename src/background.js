@@ -60,27 +60,39 @@ chrome.storage.sync.onChanged.addListener(async () => {
   await refreshConfig();
 });
 
+chrome.runtime.onInstalled.addListener(async () => {
+  // Migration from 0.1.2 to 0.1.3
+  const { activations } = await chrome.storage.local.get({ activations: [] });
+  if(!(activations instanceof Array)) {
+    await chrome.storage.local.set({ activations: [] });
+  }
+});
+
 // Message listener
 chrome.runtime.onMessage.addListener(function(payload, sender, sendResponse) {
   // console.log(payload, sender, sendResponse);
   (async () => {
     // Message handlers
     if(payload.action === 'status') {
-      const lastActivationTime = (await chrome.storage.local.get({ activations: {} })).activations[payload.host];
+      const lastActivationTime = (await chrome.storage.local.get({ activationTimes: {} })).activationTimes[payload.host];
       sendResponse({
         access: (lastActivationTime >= Date.now()-config.activation.timeSeconds*1000)
       });
     } else if(payload.action === 'hostActivated') {
-      const { activations } = (await chrome.storage.local.get({ activations: {} }));
-      activations[payload.host] = Date.now();
-      await chrome.storage.local.set({ activations });
+      let { activationTimes, activations } = (await chrome.storage.local.get({ activationTimes: {}, activations: [] }));
+      activationTimes[payload.host] = Date.now();
+      activations.push({ host: payload.host, ts: unix() });
+      const t = sessionAutoClearTime();
+      if(activations[0].ts < t) activations = activations.filter(s => s.ts > t);
+      await chrome.storage.local.set({ activationTimes, activations });
       sendResponse({});
-    } else if(payload.action === 'reloadUnpacked') {
+    } else if(payload.action === 'interception') {
+      let { interceptions } = (await chrome.storage.local.get({ interceptions: [] }));
+      interceptions.push({ host: payload.host, ts: unix() });
+      const t = sessionAutoClearTime();
+      if(interceptions[0].ts < t) interceptions = interceptions.filter(s => s.ts > t);
+      await chrome.storage.local.set({ interceptions });
       sendResponse({});
-      setTimeout(_ => chrome.runtime.reload(), 30);
-    } else if(payload.action === 'debug') {
-      sendResponse({});
-      // console.log(payload);
     } else {
       console.warn(payload);
       throw new Error('Unknown message, required sendResponse not called.');
@@ -114,6 +126,10 @@ function unix() {
   return Math.round(Date.now()/1000);
 }
 
+function sessionAutoClearTime() {
+ return unix()-86400*7;
+}
+
 async function endAnyActiveSession() {
   const { activeSession } = await chrome.storage.local.get({ activeSession: null });
   if(!activeSession) return;
@@ -132,18 +148,14 @@ async function endAnyActiveSession() {
   });
 
   // Cleanup sessions (TODO aggregate and track day counters, don't keep data)
-  const sessionStoreTime = unix()-86400*7;
-  if(sessions[0].end < sessionStoreTime) {
-    sessions = sessions.filter(s => s.end > sessionStoreTime);
-  }
+  const t = sessionAutoClearTime();
+  if(sessions[0].end < t) sessions = sessions.filter(s => s.end > t);
 
   // console.log({ sessions });
-
   await chrome.storage.local.set({ sessions, activeSession: null });
 }
 
 // TODO this is not yet correct
-// Bug: it tracks when the overlay is shown, this should be counted as muscle memory.
 // Nice to have: time spent distribution in browser.
 async function handleWindowOnFocusChanged(windowId) {
   // console.log('onFocusChanged', windowId);
@@ -196,6 +208,13 @@ async function handleTabsOnActivated({ tabId, windowId }) {
   await handleActiveTab(activeTab);
 }
 
+async function sessionHandler(details) {
+  const tab = await chrome.tabs.get(details.tabId);
+  if(tab.active) {
+    await handleActiveTab(tab);
+  }
+}
+
 // Initialize application
 async function main() {
   await refreshConfig();
@@ -203,6 +222,7 @@ async function main() {
   // Backup interceptors (registerContentScript doesn't work in incognito)
   chrome.webNavigation.onBeforeNavigate.addListener(navigationHandler); 
   chrome.webNavigation.onCommitted.addListener(navigationHandler);
+  chrome.webNavigation.onCommitted.addListener(sessionHandler);
 
   // Track time counters
   chrome.windows.onFocusChanged.addListener(handleWindowOnFocusChanged);

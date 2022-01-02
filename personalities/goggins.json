@@ -14,13 +14,13 @@
       "drill": "You have {{ctx.holdSecondsRemaining}} sec to decide to stay fucking hard!<br><br>What the fuck are you gonna do here?"
     },
     {
-      "drill": "You have {{ctx.holdSecondsRemaining}} sec to decide to stay fucking hard!<br><br>One life one shot, focus and do something useful!"
+      "drill": "You have {{ctx.holdSecondsRemaining}} sec to decide to stay fucking hard!<br><br>Focus and do something useful!"
     },
     {
-      "drill": "You have {{ctx.holdSecondsRemaining}} sec to decide to stay fucking hard!<br><br>Eyes on the prize motherfucker!"
+      "drill": "You have {{ctx.holdSecondsRemaining}} sec to decide to stay fucking hard!<br><br>You are either getting better or getting worse!"
     },
     {
-      "drill": "You have {{ctx.holdSecondsRemaining}} sec to decide to stay fucking hard!<br><br>Keep punching!"
+      "drill": "You have {{ctx.holdSecondsRemaining}} sec to decide to stay fucking hard!<br><br>You have to suffer!"
     }
   ]
 }
