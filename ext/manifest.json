@@ -3,7 +3,7 @@
   
   "name": "Stay Hard",
   "description": "Intercept muscle memory and stay away from addictive, time-wasting & non-productive sites.",
-  "version": "0.1.3",
+  "version": "0.1.4",
 
   "action": {
     "default_popup": "popup.html"
