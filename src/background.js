@@ -83,15 +83,22 @@ chrome.runtime.onMessage.addListener(function(payload, sender, sendResponse) {
       activationTimes[payload.host] = Date.now();
       activations.push({ host: payload.host, ts: unix() });
       const t = sessionAutoClearTime();
-      if(activations[0].ts < t) activations = activations.filter(s => s.ts > t);
+      if(activations[0].ts < t) activations = activations.filter(d => d.ts > t);
       await chrome.storage.local.set({ activationTimes, activations });
       sendResponse({});
     } else if(payload.action === 'interception') {
       let { interceptions } = (await chrome.storage.local.get({ interceptions: [] }));
       interceptions.push({ host: payload.host, ts: unix() });
       const t = sessionAutoClearTime();
-      if(interceptions[0].ts < t) interceptions = interceptions.filter(s => s.ts > t);
+      if(interceptions[0].ts < t) interceptions = interceptions.filter(d => d.ts > t);
       await chrome.storage.local.set({ interceptions });
+      sendResponse({});
+    } else if(payload.action === 'peekOnce') {
+      let { peeks } = (await chrome.storage.local.get({ peeks: [] }));
+      peeks.push({ host: payload.host, path: payload.path, ts: unix() });
+      const t = sessionAutoClearTime();
+      if(peeks[0].ts < t) peeks = peeks.filter(d => d.ts > t);
+      await chrome.storage.local.set({ peeks });
       sendResponse({});
     } else {
       console.warn(payload);

@@ -39,8 +39,9 @@ const Overlay = () => {
   const [imgSrc, setImgSrc] = useState(undefined);
 
   // Start countdown when pressing down and schedule release
-  const onmousedown = useCallback(() => {
+  const onmousedown = useCallback(e => {
     if(!timeout) {
+      if(e.target.tagName.toUpperCase() === 'BUTTON') return; // make sure the "Only this page" doesn't flash
       setDrillSize('24px');
       ctx.holdSecondsRemaining = config.activation.holdSeconds;
       ctx.getSoftTemplate = config.personality.onGetSoft[random(0, config.personality.onGetSoft.length-1)].drill;
@@ -119,6 +120,20 @@ const Overlay = () => {
     setImgSrc(chrome.runtime.getURL(ctx.view.img));
   }, []);
 
+  // Disable without countdown, but recreate overlay with next page load.
+  // This is primarily useful in workflow when you need a link, but you don't want to spend more time on the domain.
+  // This doesn't count as getting soft.
+  const peekOnce = useCallback(e => {
+    setVisibility('none');
+    setTimeout(() => {
+      document.documentElement.removeChild(root.__e);
+      root = null;
+    }, 1000);
+    chrome.runtime.sendMessage({ action: 'peekOnce', href: location.href, path: location.pathname }, function() {
+      // No action required.
+    });
+  }, []);
+
   return (
     <div 
       id={overlayId()} 
@@ -195,6 +210,30 @@ const Overlay = () => {
           dangerouslySetInnerHTML={{ __html: drillHtml }}
         ></div>
       </div>
+
+      <div 
+          style={{
+            position: 'absolute',
+            letterSpacing: '1px',
+            left: 0,
+            right: 0,
+            marginLeft: 'auto',
+            marginRight: 'auto',
+            bottom: '50px',
+            width: '200px',
+            textAlign: 'center',
+          }}>
+            <button 
+              onclick={peekOnce}
+              style={{
+                backgroundColor: 'transparent',
+                borderRadius: '5px',
+                border: '1px dashed #000',
+                padding: '6px 12px',
+                userSelect: 'none',
+                cursor: 'pointer',
+              }}>Only this page</button>
+          </div>
       
     </div>
   )
