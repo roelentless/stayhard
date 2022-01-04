@@ -24,10 +24,14 @@ Popular personalities will be included in the extension over time.
 
 Manifest V3 is used. Keep it simple.
 
-### Release build
-```
-yarn build
-```
+### Releasing
+
+-  create release branch
+-  bump manifest and package.json versions
+-  commit & merge back
+-  in branch `yarn build`
+-  zip ext contents
+-  submit
 
 ### Dev mode auto rebuild
 ```
