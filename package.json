@@ -1,6 +1,6 @@
 {
   "name": "stayhard",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "main": "none",
   "description": "Intercept muscle memory and stay away from addictive, time-wasting & non-productive sites.",
   "repository": "git@github.com:ruleb/stayhard.git",
