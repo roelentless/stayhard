@@ -2,6 +2,9 @@
 
 Browser extension to intercept muscle memory and stay away from addictive, time-wasting & non-productive sites.
 
+## Install
+[Install latest version via webstore](https://chrome.google.com/webstore/detail/stay-hard/dakeldfmjelfoegkcnpggmegkhnfllge)
+
 ## Personalities
 
 The personality defines the tone, character, charisma and aggressiveness of the extension.

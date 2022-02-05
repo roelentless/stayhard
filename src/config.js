@@ -5,7 +5,7 @@ import sites from '../config/sites.json';
 
 export const defaultConfig = {
   activation: {
-    holdSeconds: 5,
+    holdSeconds: 3,
     timeSeconds: 5*60,
   },
   sites,

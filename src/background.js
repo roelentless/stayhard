@@ -202,10 +202,10 @@ async function handleActiveTab(tab) {
   if(activeSession && activeSession.pattern !== match.pattern) {
     await endAnyActiveSession();
     // Switch session
-    await chrome.storage.local.set({ activeSession: { pid: pid, pattern: match.pattern, start: unix() }});
+    await chrome.storage.local.set({ activeSession: { pid: pid, pattern: match.pattern, start: unix(), tabId: tab.id }});
   } else if (!activeSession) {
     // Start new session
-    await chrome.storage.local.set({ activeSession: { pid: pid, pattern: match.pattern, start: unix() }});
+    await chrome.storage.local.set({ activeSession: { pid: pid, pattern: match.pattern, start: unix(), tabId: tab.id }});
   }
   // console.log('session started');
 }
@@ -213,6 +213,14 @@ async function handleActiveTab(tab) {
 async function handleTabsOnActivated({ tabId, windowId }) {
   const activeTab = await chrome.tabs.get(tabId);
   await handleActiveTab(activeTab);
+}
+
+async function handleTabsOnRemoved(tabId, { isWindowClosing, windowId }) {
+  // If we have an active session on this tab, we close it.
+  const { activeSession } = await chrome.storage.local.get({ activeSession: { } });
+  if(activeSession.tabId === tabId) {
+    await endAnyActiveSession();
+  };
 }
 
 async function sessionHandler(details) {
@@ -234,5 +242,6 @@ async function main() {
   // Track time counters
   chrome.windows.onFocusChanged.addListener(handleWindowOnFocusChanged);
   chrome.tabs.onActivated.addListener(handleTabsOnActivated);
+  chrome.tabs.onRemoved.addListener(handleTabsOnRemoved);
 }
 main();
