@@ -14,6 +14,7 @@
     "@tailwindcss/forms": "^0.4.0",
     "autoprefixer": "^10.4.1",
     "browser-extension-url-match": "^0.3.3",
+    "dayjs": "^1.11.5",
     "esbuild": "^0.14.5",
     "esbuild-plugin-postcss2": "^0.1.1",
     "humanize-time": "^0.0.3",

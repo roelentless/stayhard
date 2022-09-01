@@ -5,11 +5,10 @@ import duration from 'humanize-time';
 import './popup.css';
 
 async function getStats() {
-  const { sessions, interceptions, activations, peeks } = await chrome.storage.local.get({ 
+  const { sessions, interceptions, activations } = await chrome.storage.local.get({ 
     sessions: [], 
     interceptions: [], 
     activations: [],
-    peeks: [],
   });
   
   // Count session times
@@ -22,7 +21,6 @@ async function getStats() {
     wastedTime: duration(totalTime*1000),
     nrInterceptions: interceptions.length,
     nrActivations: activations.length,
-    nrPeeks: peeks.length,
   };
 }
 
@@ -94,10 +92,6 @@ const Popup = () => {
         <div class="basis-1/4">
           <div class="font-black text-base">{stats.nrActivations}</div>
           <div class="text-sm">times you got soft</div>
-        </div>
-        <div class="basis-1/4">
-          <div class="font-black text-base">{stats.nrPeeks}</div>
-          <div class="text-sm">times you peeked</div>
         </div>
         <div class="absolute text-xs right-1 top-0 font-bold">
           last 7 days

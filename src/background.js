@@ -1,5 +1,5 @@
 import { matchPattern } from 'browser-extension-url-match';
-import { enrichConfig } from './config';
+import { defaultConfig, enrichConfig } from './config';
 
 let config;
 const pid = self.crypto.getRandomValues(new Uint32Array(1))[0].toString(16);
@@ -30,7 +30,7 @@ async function refreshConfig() {
 
   // Re-register content scripts
   // console.log(matchListGenerator(config.sites), initialized);
-  matchList = matchListGenerator(config.sites);
+  matchList = matchListGenerator(config.sites.map(s => s.filter));
   matchers = matchList.map(p => matchPattern(p));
   // console.log({ matchList, matchers });
   
@@ -60,13 +60,27 @@ chrome.storage.sync.onChanged.addListener(async () => {
   await refreshConfig();
 });
 
-chrome.runtime.onInstalled.addListener(async () => {
+async function onInstalled() {
   // Migration from 0.1.2 to 0.1.3
   const { activations } = await chrome.storage.local.get({ activations: [] });
   if(!(activations instanceof Array)) {
     await chrome.storage.local.set({ activations: [] });
   }
-});
+
+  // Migration from 0.1.0 to 0.1.6
+  let { config } = await chrome.storage.sync.get({ config: {} });
+  if(config.sites.find(s => typeof s === 'string')) {
+    config.sites = config.sites.map(s => {
+      if(typeof s === 'string') {
+        const dflt = defaultConfig.sites.find(d => d.filter === s);
+        if(dflt) return dflt;
+        return { filter: s };
+      }
+    })
+    await chrome.storage.sync.set({ config });
+  }
+}
+chrome.runtime.onInstalled.addListener(onInstalled);
 
 // Message listener
 chrome.runtime.onMessage.addListener(function(payload, sender, sendResponse) {
@@ -74,10 +88,33 @@ chrome.runtime.onMessage.addListener(function(payload, sender, sendResponse) {
   (async () => {
     // Message handlers
     if(payload.action === 'status') {
-      const lastActivationTime = (await chrome.storage.local.get({ activationTimes: {} })).activationTimes[payload.host];
-      sendResponse({
-        access: (lastActivationTime >= Date.now()-config.activation.timeSeconds*1000)
-      });
+      let access = false;
+
+      // First check if there is an override long-press exception on the DNS
+      const { activationTimes, softRoutineStatuses } = (await chrome.storage.local.get({ activationTimes: {}, softRoutineStatuses: {} }));
+      const lastActivationTime = activationTimes[payload.host];
+      if(lastActivationTime && lastActivationTime >= Date.now()-config.activation.timeSeconds*1000) {
+        access = true;
+
+      } else { // Else check if the site is part of a routine and not blocked.
+        // Validate the strategy of a DNS isn't hard
+        const matchIdx = getFilterableMatchIdx(payload.origin, -1, 0);
+        const siteConfig = (matchIdx >= 0 ? config.sites[matchIdx] : null);
+        const hardBlocked = (siteConfig && siteConfig.strategy === "hard");
+        if(!hardBlocked) {
+          // See if any soft routines are active
+          for(let routine of config.softRoutines) {
+            const time = softRoutineStatuses[routine.label];
+            if(time && Date.now()-time <= routine.duration*1000) {
+              access = true;
+              // TODO: analytics on event
+              break;
+            }
+          }
+        }
+      }
+      sendResponse({ access });
+
     } else if(payload.action === 'hostActivated') {
       let { activationTimes, activations } = (await chrome.storage.local.get({ activationTimes: {}, activations: [] }));
       activationTimes[payload.host] = Date.now();
@@ -86,6 +123,7 @@ chrome.runtime.onMessage.addListener(function(payload, sender, sendResponse) {
       if(activations[0].ts < t) activations = activations.filter(d => d.ts > t);
       await chrome.storage.local.set({ activationTimes, activations });
       sendResponse({});
+
     } else if(payload.action === 'interception') {
       let { interceptions } = (await chrome.storage.local.get({ interceptions: [] }));
       interceptions.push({ host: payload.host, ts: unix() });
@@ -93,13 +131,13 @@ chrome.runtime.onMessage.addListener(function(payload, sender, sendResponse) {
       if(interceptions[0].ts < t) interceptions = interceptions.filter(d => d.ts > t);
       await chrome.storage.local.set({ interceptions });
       sendResponse({});
-    } else if(payload.action === 'peekOnce') {
-      let { peeks } = (await chrome.storage.local.get({ peeks: [] }));
-      peeks.push({ host: payload.host, path: payload.path, ts: unix() });
-      const t = sessionAutoClearTime();
-      if(peeks[0].ts < t) peeks = peeks.filter(d => d.ts > t);
-      await chrome.storage.local.set({ peeks });
+
+    } else if(payload.action === "startSoftRoutine") {
+      let { softRoutineStatuses } = (await chrome.storage.local.get({ softRoutineStatuses: {} }));
+      softRoutineStatuses[payload.routine.label] = Date.now();
+      await chrome.storage.local.set({ softRoutineStatuses });
       sendResponse({});
+
     } else {
       console.warn(payload);
       throw new Error('Unknown message, required sendResponse not called.');
@@ -110,14 +148,16 @@ chrome.runtime.onMessage.addListener(function(payload, sender, sendResponse) {
   return true
 });
 
+function getFilterableMatchIdx(url, parentFrameId, frameId) {
+  if(url.substr(0,6) === 'chrome') return -1; // Don't check on chrome pages, causes an error.
+  if(parentFrameId !== -1 || frameId !== 0) return -1; // Only react to tab urls, not the embedded content.
+
+  return matchers.findIndex(m => m.match(url));
+}
+
 async function navigationHandler(details) {
-  // console.log(Date.now(), { details }); 
-
-  if(details.url.substr(0,6) === 'chrome') return; // Don't check on chrome pages, causes an error.
-  if(details.parentFrameId !== -1 || details.frameId !== 0) return; // Only react to tab urls, not the embedded content.
-
-  const isMatch = matchers.find(m => m.match(details.url));
-  if(isMatch == null) return;
+  const idx = getFilterableMatchIdx(details.url, details.parentFrameId, details.frameId);
+  if(idx < 0) return;
 
   try {
     await chrome.scripting.executeScript({
@@ -218,7 +258,7 @@ async function handleTabsOnActivated({ tabId, windowId }) {
 async function handleTabsOnRemoved(tabId, { isWindowClosing, windowId }) {
   // If we have an active session on this tab, we close it.
   const { activeSession } = await chrome.storage.local.get({ activeSession: { } });
-  if(activeSession.tabId === tabId) {
+  if(activeSession?.tabId === tabId) {
     await endAnyActiveSession();
   };
 }

@@ -25,7 +25,8 @@ Popular personalities will be included in the extension over time.
 
 ## Dev
 
-Manifest V3 is used. Keep it simple.
+Manifest V3 is used.   
+Keep it simple.
 
 ### Releasing
 

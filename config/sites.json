@@ -1,9 +1,38 @@
 [
-  "facebook.com",
-  "instagram.com",
-  "youtube.com",
-  "netflix.com",
-  "twitter.com",
-  "news.ycombinator.com",
-  "test.stayhard"
+  { "filter": "tiktok.com" },
+  { "filter": "snapchat.com" },
+  { "filter": "facebook.com" },
+  { "filter": "instagram.com" },
+  { "filter": "youtube.com" },
+  { "filter": "twitter.com" },
+  { "filter": "pinterest.com" },
+  { "filter": "reddit.com" },
+  { "filter": "twitch.tv" },
+
+  { "filter": "netflix.com" },
+  { "filter": "disneyplus.com" },
+  { "filter": "tv.apple.com" },
+  { "filter": "hbomax.com" },
+  { "filter": "hulu.com" },
+  { "filter": "sling.com" },
+  { "filter": "peacocktv.com" },
+  { "filter": "fubo.tv" },
+  { "filter": "primevideo.com" },
+
+  { "filter": "strava.com" },
+  { "filter": "komoot.com" },
+  { "filter": "runkeeper.com" },
+
+  { "filter": "pornhub.com", "strategy": "hard" },
+  { "filter": "youjizz.com", "strategy": "hard" },
+  { "filter": "xhamster.com", "strategy": "hard" },
+  { "filter": "xvideos.com", "strategy": "hard" },
+  { "filter": "xnxx.com", "strategy": "hard" },
+
+  { "filter": "news.ycombinator.com" },
+  { "filter": "vrt.be" },
+  { "filter": "hln.be" },
+  { "filter": "tweakers.net" },
+
+  { "filter": "test.stayhard" }
 ]

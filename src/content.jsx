@@ -2,6 +2,14 @@ import { h, Fragment, render } from 'preact';
 import { useEffect, useState, useCallback } from 'preact/hooks';
 import random from 'lodash/random';
 import mustache from 'mustache';
+import dayjs from 'dayjs';
+
+// TODO: watch the history api for changes to URL to capture single page apps.
+// TODO: when entering applications via deeplink from a referer app, it can be assumed user is in "workflow", which should not show blocker. Only muscle memory should trigger the overlay, or when user continues after the page.
+// TODO: set a new text every 1.5 seconds while pressing down.
+// TODO: define time-period exceptions to the list are active. Eg: during work, techcrunch is allowed.
+// TODO: use ufti instead of preact in a dull moment.
+// TODO: mobile extension for safari/chrome.
 
 let root;
 let config;
@@ -18,7 +26,7 @@ function parseTemplate(templateString, ctx = {}) {
   const { activation, sites } = config;
   return mustache.render(templateString, {
     activation,
-    sites,
+    sites: sites.map(s => s.filter),
     ctx: {
       ...ctx,
       site: location.host.split(':')[0],
@@ -37,6 +45,16 @@ const Overlay = () => {
   const [drillHtml, setDrillHtml] = useState(undefined);
   const [reminderHtml, setReminderHtml] = useState(undefined);
   const [imgSrc, setImgSrc] = useState(undefined);
+  const [softRoutineStatuses, setSoftRoutineStatuses] = useState({});
+  const [routineFeedback, setRoutineFeedback] = useState('');
+
+  function removeOverlay() {
+    setVisibility('none');
+    setTimeout(() => {
+      document.documentElement.removeChild(root.__e);
+      root = null;
+    }, 1000);
+  }
 
   // Start countdown when pressing down and schedule release
   const onmousedown = useCallback(e => {
@@ -52,13 +70,7 @@ const Overlay = () => {
               action: "hostActivated", 
               host: location.host,
             }, 
-            () => {
-              setVisibility('none');
-              setTimeout(() => {
-                document.documentElement.removeChild(root.__e);
-                root = null;
-              }, 1000);
-            },
+            () => removeOverlay(),
           );
         }, 
         config.activation.holdSeconds * 1000,
@@ -86,24 +98,20 @@ const Overlay = () => {
     setDrillSize(drillDefaultFontSize);
   });
 
-  // Hide && remove when white listed
+  // Hide && remove when in allowlist
   useEffect(() => {
-    chrome.runtime.sendMessage({ action: "status", host: location.host }, function(res) {
+    chrome.runtime.sendMessage({ action: "status", host: location.host, origin: location.origin }, function(res) {
       if(res.access === true) {
-        setVisibility('none');
-        setTimeout(() => {
-          document.documentElement.removeChild(root.__e);
-          root = null;
-        }, 1000);
+        removeOverlay();
       } else {
-        chrome.runtime.sendMessage({ action: 'interception', host: location.host }, function() {
+        chrome.runtime.sendMessage({ action: 'interception', host: location.host, origin: location.origin }, function() {
           // No action required.
         });
       }
     });
   }, []);
 
-  // Fetch assets and set content async to ensure we are  blocking on first render
+  // Fetch assets and set content async to ensure we are blocking on first render
   useEffect(async () => {
     const { config: config_ } = await chrome.storage.sync.get('config');
     config = config_; // Make it available in top scope;
@@ -120,18 +128,29 @@ const Overlay = () => {
     setImgSrc(chrome.runtime.getURL(ctx.view.img));
   }, []);
 
-  // Disable without countdown, but recreate overlay with next page load.
-  // This is primarily useful in workflow when you need a link, but you don't want to spend more time on the domain.
-  // This doesn't count as getting soft.
-  const peekOnce = useCallback(e => {
-    setVisibility('none');
-    setTimeout(() => {
-      document.documentElement.removeChild(root.__e);
-      root = null;
-    }, 1000);
-    chrome.runtime.sendMessage({ action: 'peekOnce', href: location.href, path: location.pathname }, function() {
+  // Enable a routine. This function can only be called if the routine is allowed.
+  const startSoftRoutine = (routine, disabled) => {
+    // Show feedback if needed
+    setRoutineFeedback('');
+    if(disabled) {
+      const resetTime = dayjs(softRoutineStatuses[routine.label] + routine.resetTime*1000);
+      setRoutineFeedback(`${routine.label} is burned, resets on: ${resetTime.format()}`)
+
+      return;
+    }
+
+    // When not disabled: load
+    removeOverlay();
+    chrome.runtime.sendMessage({ action: 'startSoftRoutine', href: location.href, path: location.pathname, routine }, function() {
       // No action required.
     });
+  }
+
+  useEffect(() => {
+    (async () => {
+      let { softRoutineStatuses } = (await chrome.storage.local.get({ softRoutineStatuses: {} }));
+      setSoftRoutineStatuses(softRoutineStatuses)
+    })();
   }, []);
 
   return (
@@ -211,30 +230,45 @@ const Overlay = () => {
         ></div>
       </div>
 
+      {/* Soft routines */}
       <div 
-          style={{
-            position: 'absolute',
-            letterSpacing: '1px',
-            left: 0,
-            right: 0,
-            marginLeft: 'auto',
-            marginRight: 'auto',
-            bottom: '50px',
-            width: '200px',
-            textAlign: 'center',
-          }}>
-            <button 
-              onclick={peekOnce}
-              style={{
-                backgroundColor: 'transparent',
-                borderRadius: '5px',
-                border: '1px dashed #000',
-                padding: '6px 12px',
-                userSelect: 'none',
-                cursor: 'pointer',
-              }}>Only this page</button>
-          </div>
-      
+        style={{
+          position: 'absolute',
+          letterSpacing: '1px',
+          left: 0,
+          right: 0,
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          bottom: '50px',
+          width: '600px',
+          textAlign: 'center',
+        }}>
+          <div style={{marginBottom: '10px'}}>{routineFeedback}</div>
+
+          {config && config.softRoutines && config.softRoutines.map(routine => {
+            // Make button disabled if burned
+            const time = softRoutineStatuses[routine.label];
+            let disabled = false;
+            if(time && (Date.now()-time) < routine.resetTime*1000) {
+              disabled = true;
+            }
+
+            return (
+              <button 
+                onclick={() => startSoftRoutine(routine, disabled)}
+                style={{
+                  backgroundColor: 'transparent',
+                  borderRadius: '5px',
+                  border: '1px dashed #000',
+                  padding: '6px 12px',
+                  marginRight: '6px',
+                  userSelect: 'none',
+                  cursor: 'pointer',
+                  opacity: disabled ? '0.3' : '1.0',
+                }}>{routine.label}</button>
+            )
+          })}
+      </div>
     </div>
   )
 }
